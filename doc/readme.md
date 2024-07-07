@@ -69,41 +69,41 @@ ELK --> [Logs] : Log Analysis
 ## Component Description
 
 - **Client Application**:
-    - Communicates with the Quiz Service using WebSocket for real-time interactions.
-    - Communicates with the API Gateway for authentication and non-real-time requests.
+  - Communicates with the Quiz Service using WebSocket for real-time interactions.
+  - Communicates with the API Gateway for authentication and non-real-time requests.
 
 - **API Gateway**:
-    - Manages WebSocket connections and forwards requests to the appropriate backend services.
-    - Handles user authentication via the Authentication Service.
+  - Manages WebSocket connections and forwards requests to the appropriate backend services.
+  - Handles user authentication via the Authentication Service.
 
 - **Quiz Service**:
-    - Manages WebSocket connections for real-time quiz interactions.
-    - Handles quiz logic and updates quiz data in PostgreSQL.
-    - Communicates with the Score Service to send answer data.
-    - Uses Redis for caching quiz data.
+  - Manages WebSocket connections for real-time quiz interactions.
+  - Handles quiz logic and updates quiz data in PostgreSQL.
+  - Communicates with the Score Service to send answer data.
+  - Uses Redis for caching quiz data.
 
 - **Score Service**:
-    - Receives answer data from the Quiz Service.
-    - Calculates scores based on the answer data.
-    - Updates score data in PostgreSQL.
-    - Communicates with the Leaderboard Service to update the leaderboard.
-    - Uses Redis for caching score data.
+  - Receives answer data from the Quiz Service.
+  - Calculates scores based on the answer data.
+  - Updates score data in PostgreSQL.
+  - Communicates with the Leaderboard Service to update the leaderboard.
+  - Uses Redis for caching score data.
 
 - **Leaderboard Service**:
-    - Receives score updates from the Score Service.
-    - Manages leaderboard data in PostgreSQL.
-    - Uses Redis for caching leaderboard data.
+  - Receives score updates from the Score Service.
+  - Manages leaderboard data in PostgreSQL.
+  - Uses Redis for caching leaderboard data.
 
 - **Authentication Service**:
-    - Handles user authentication.
+  - Handles user authentication.
 
 - **Monitoring Tools**:
-    - Prometheus for metrics collection.
-    - Grafana for metrics visualization.
-    - ELK Stack for log analysis.
+  - Prometheus for metrics collection.
+  - Grafana for metrics visualization.
+  - ELK Stack for log analysis.
 
 - **Databases**:
-    - Each service interacts with its respective PostgreSQL and Redis database for data storage and retrieval.
+  - Each service interacts with its respective PostgreSQL and Redis database for data storage and retrieval.
 
 ## Sequence Diagrams
 
@@ -174,11 +174,11 @@ QuizService -> Client: WebSocket Leaderboard Update
 #### Quiz Database
 - **Purpose**: Stores quiz data including questions, options, correct answers, and session information.
 - **Tables**:
-    - `quiz_sessions`: Stores information about active quiz sessions.
-    - `questions`: Contains questions and their respective options.
-    - `answers`: Records submitted answers by users for each session.
+  - `quiz_sessions`: Stores information about active quiz sessions.
+  - `questions`: Contains questions and their respective options.
+  - `answers`: Records submitted answers by users for each session.
+
 ```sql
--- Quiz Database Schema
 CREATE TABLE quiz_sessions (
     session_id SERIAL PRIMARY KEY,
     quiz_id INT NOT NULL,
@@ -209,11 +209,10 @@ CREATE TABLE answers (
 #### Score Database (PostgresScore)
 - **Purpose**: Manages user scores for quizzes.
 - **Tables**:
-    - `user_scores`: Stores scores of users participating in quizzes.
-    - `score_history`: Logs historical score data for analysis and auditing.
+  - `user_scores`: Stores scores of users participating in quizzes.
+  - `score_history`: Logs historical score data for analysis and auditing.
 
 ```sql
--- Score Database Schema
 CREATE TABLE user_scores (
     score_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
@@ -237,11 +236,10 @@ CREATE TABLE score_history (
 #### Leaderboard Database (PostgresLeaderboard)
 - **Purpose**: Stores leaderboard data.
 - **Tables**:
-    - `leaderboard`: Keeps track of user rankings based on scores.
-    - `leaderboard_history`: Maintains historical data for leaderboard trends and changes.
+  - `leaderboard`: Keeps track of user rankings based on scores.
+  - `leaderboard_history`: Maintains historical data for leaderboard trends and changes.
 
 ```sql
--- Leaderboard Database Schema
 CREATE TABLE leaderboard (
     rank_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
@@ -288,58 +286,3 @@ CREATE TABLE leaderboard_history (
 - **Prometheus**: For metrics collection and monitoring.
 - **Grafana**: For visualizing metrics collected by Prometheus.
 - **ELK Stack**: For log collection and analysis.
-
-## Getting Started
-## Prerequisites
-
-- Java 11 or higher
-- Maven
-
-## Setup
-
-### 1. Clone the Repository
-
-```sh
-git clone https://github.com/huynhvanhoang/english-quiz.git
-```
-### 2. Build & run Project Scores, Leaderboard
-#### Scores Service
-```sh
-cd scores
-mvn clean package
-mvn spring-boot:run
-```
-#### Leaderboard Service
-```sh
-cd leaderboard
-mvn clean package
-mvn spring-boot:run
-```
-### 3. Tesing
-#### Add score
-```sh
-curl -X POST http://localhost:8081/v1/score/update \
-    -H "Content-Type: application/json" \
-    -d '{
-        "userId": 1,
-        "quizId": 1,
-        "score": 5
-    }'
-```
-
-```sh
-curl -X POST http://localhost:8081/v1/score/update \
-    -H "Content-Type: application/json" \
-    -d '{
-        "userId": 2,
-        "quizId": 1,
-        "score": 5
-    }'
-```
-
-#### Retrieve leaderboard for Quiz 1
-```sh
-curl http://localhost:8082/v1/leaderboard/1
-```
-
-

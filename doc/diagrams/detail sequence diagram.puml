@@ -1,0 +1,37 @@
+@startuml
+actor User
+participant "Client Application" as Client
+participant "API Gateway" as Gateway
+participant "Quiz Service" as QuizService
+participant "Score Service" as ScoreService
+participant "Leaderboard Service" as LeaderboardService
+participant "Authentication Service" as AuthService
+
+database "PostgreSQL for Quiz" as PostgresQuiz
+database "PostgreSQL for Score" as PostgresScore
+database "PostgreSQL for Leaderboard" as PostgresLeaderboard
+
+User -> Client: Joins Quiz
+Client -> Gateway: WebSocket Join Request
+Gateway -> AuthService: Validate Session
+AuthService --> Gateway: Authentication Success
+Gateway -> QuizService: Session Validated
+
+Client -> QuizService: WebSocket Submit Answer
+QuizService -> PostgresQuiz: Write Answer Data
+QuizService -> ScoreService: Send Answer Data
+
+ScoreService -> ScoreService: Calculate Score
+ScoreService -> PostgresScore: Write Score Data
+ScoreService -> LeaderboardService: Update Leaderboard
+
+LeaderboardService -> PostgresLeaderboard: Write Leaderboard Data
+
+QuizService -> Client: WebSocket Send Acknowledgment
+LeaderboardService --> ScoreService: response
+ScoreService --> QuizService: response
+QuizService -> LeaderboardService: get Ranking
+LeaderboardService --> QuizService: ranking info
+QuizService -> Client: WebSocket Leaderboard Update
+
+@enduml

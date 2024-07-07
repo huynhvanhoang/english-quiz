@@ -1,0 +1,58 @@
+@startuml
+skinparam linetype ortho
+
+actor User
+rectangle "Client Application" {
+  [Client] as Client
+}
+
+rectangle "Backend" {
+  [Quiz Service] as QuizService
+  [Score Service] as ScoreService
+  [Leaderboard Service] as LeaderboardService
+  [Authentication Service] as AuthService
+}
+
+[API Gateway] as Gateway
+
+database "Redis for Quiz" as RedisQuiz
+database "Redis for Score" as RedisScore
+database "Redis for Leaderboard" as RedisLeaderboard
+database "PostgreSQL for Quiz" as PostgresQuiz
+database "PostgreSQL for Score" as PostgresScore
+database "PostgreSQL for Leaderboard" as PostgresLeaderboard
+
+rectangle "Monitoring" {
+  [Prometheus] as Prometheus
+  [Grafana] as Grafana
+  [ELK Stack] as ELK
+}
+
+User --> Client : Uses
+
+Client --> Gateway : WebSocket
+Client --> QuizService : WebSocket
+
+Gateway --> AuthService
+Gateway --> QuizService
+Gateway --> ScoreService
+Gateway --> LeaderboardService
+
+QuizService --> RedisQuiz : Read/Write
+QuizService --> PostgresQuiz : Read/Write
+QuizService --> ScoreService
+
+ScoreService --> RedisScore : Read/Write
+ScoreService --> PostgresScore : Read/Write
+ScoreService --> LeaderboardService
+
+LeaderboardService --> RedisLeaderboard : Read/Write
+LeaderboardService --> PostgresLeaderboard : Read/Write
+
+Backend --> Monitoring : Metrics
+Backend --> ELK : Logs
+
+Prometheus --> Grafana : Metrics Visualization
+ELK --> [Logs] : Log Analysis
+
+@enduml
