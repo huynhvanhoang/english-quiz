@@ -238,7 +238,17 @@ curl -X POST http://localhost:8081/v1/score/update \
     -d '{
         "userId": 2,
         "quizId": 1,
-        "score": 5
+        "score": 10
+    }'
+```
+
+```sh
+curl -X POST http://localhost:8081/v1/score/update \
+    -H "Content-Type: application/json" \
+    -d '{
+        "userId": 3,
+        "quizId": 1,
+        "score": 7
     }'
 ```
 
