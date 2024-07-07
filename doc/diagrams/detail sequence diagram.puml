@@ -1,5 +1,7 @@
 @startuml
+skin rose
 actor User
+autonumber
 participant "Client Application" as Client
 participant "API Gateway" as Gateway
 participant "Quiz Service" as QuizService

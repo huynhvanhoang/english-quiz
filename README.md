@@ -7,65 +7,8 @@ Welcome to the Real-Time Quiz coding challenge! Your task is to create a technic
 ## System Architecture
 
 ### Architecture Diagram
-```plantuml
-@startuml
-skinparam linetype ortho
+![Architecture Diagram](./doc/diagrams/system architecture.png)
 
-actor User
-rectangle "Client Application" {
-  [Client] as Client
-}
-
-rectangle "Backend" {
-  [API Gateway] as Gateway
-  [Quiz Service] as QuizService
-  [Score Service] as ScoreService
-  [Leaderboard Service] as LeaderboardService
-  [Authentication Service] as AuthService
-}
-
-database "Redis for Quiz" as RedisQuiz
-database "Redis for Score" as RedisScore
-database "Redis for Leaderboard" as RedisLeaderboard
-database "PostgreSQL for Quiz" as PostgresQuiz
-database "PostgreSQL for Score" as PostgresScore
-database "PostgreSQL for Leaderboard" as PostgresLeaderboard
-
-rectangle "Monitoring" {
-  [Prometheus] as Prometheus
-  [Grafana] as Grafana
-  [ELK Stack] as ELK
-}
-
-User --> Client : Uses
-
-Client --> Gateway : WebSocket
-Client --> QuizService : WebSocket
-
-Gateway --> AuthService
-Gateway --> QuizService
-Gateway --> ScoreService
-Gateway --> LeaderboardService
-
-QuizService --> RedisQuiz : Read/Write
-QuizService --> PostgresQuiz : Read/Write
-QuizService --> ScoreService
-
-ScoreService --> RedisScore : Read/Write
-ScoreService --> PostgresScore : Read/Write
-ScoreService --> LeaderboardService
-
-LeaderboardService --> RedisLeaderboard : Read/Write
-LeaderboardService --> PostgresLeaderboard : Read/Write
-
-Backend --> Monitoring : Metrics
-Backend --> ELK : Logs
-
-Prometheus --> Grafana : Metrics Visualization
-ELK --> [Logs] : Log Analysis
-
-@enduml
-```
 ## Component Description
 
 - **Client Application**:
@@ -106,47 +49,9 @@ ELK --> [Logs] : Log Analysis
     - Each service interacts with its respective PostgreSQL and Redis database for data storage and retrieval.
 
 ## Sequence Diagrams
+![Sequence Diagram](./doc/diagrams/sequence diagram.png)
 
-```plantuml
-@startuml
-actor User
-participant "Client Application" as Client
-participant "API Gateway" as Gateway
-participant "Quiz Service" as QuizService
-participant "Score Service" as ScoreService
-participant "Leaderboard Service" as LeaderboardService
-participant "Authentication Service" as AuthService
 
-database "PostgreSQL for Quiz" as PostgresQuiz
-database "PostgreSQL for Score" as PostgresScore
-database "PostgreSQL for Leaderboard" as PostgresLeaderboard
-
-User -> Client: Joins Quiz
-Client -> Gateway: WebSocket Join Request
-Gateway -> AuthService: Validate Session
-AuthService --> Gateway: Authentication Success
-Gateway -> QuizService: Session Validated
-
-Client -> QuizService: WebSocket Submit Answer
-QuizService -> PostgresQuiz: Write Answer Data
-QuizService -> ScoreService: Send Answer Data
-
-ScoreService -> ScoreService: Calculate Score
-ScoreService -> PostgresScore: Write Score Data
-ScoreService -> LeaderboardService: Update Leaderboard
-
-LeaderboardService -> PostgresLeaderboard: Write Leaderboard Data
-
-QuizService -> Client: WebSocket Send Acknowledgment
-LeaderboardService --> ScoreService: response
-ScoreService --> QuizService: response
-QuizService -> LeaderboardService: get Ranking
-LeaderboardService --> QuizService: ranking info
-QuizService -> Client: WebSocket Leaderboard Update
-
-@enduml
-
-```
 ## Data Flow
 
 ### User Joins Quiz:
