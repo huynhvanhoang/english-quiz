@@ -1,4 +1,23 @@
 # Real-Time Vocabulary Quiz Coding Challenge
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+  - [Architecture Diagram](#architecture-diagram)
+- [Component Description](#component-description)
+- [Sequence Diagrams](#sequence-diagrams)
+- [Data Flow](#data-flow)
+- [Database Design](#database-design)
+  - [Quiz Database](#quiz-database)
+  - [Score Database (PostgresScore)](#score-database-postgresscore)
+  - [Leaderboard Database (PostgresLeaderboard)](#leaderboard-database-postgresleaderboard)
+- [Redis Caching](#redis-caching)
+- [Technology and Tools](#technology-and-tools)
+- [How to Testing](#how-to-testing)
+  - [Prerequisites](#0-prerequisites)
+  - [Clone the Repository](#1-clone-the-repository)
+  - [Build & run Project Scores, Leaderboard](#2-build--run-project-scores-leaderboard)
+    - [Scores Service](#scores-service)
+    - [Leaderboard Service](#leaderboard-service)
+  - [Testing](#3-tesing)
 
 ## Overview
 
@@ -7,65 +26,8 @@ Welcome to the Real-Time Quiz coding challenge! Your task is to create a technic
 ## System Architecture
 
 ### Architecture Diagram
-```plantuml
-@startuml
-skinparam linetype ortho
+![Architecture Diagram](diagrams/architecture.png)
 
-actor User
-rectangle "Client Application" {
-  [Client] as Client
-}
-
-rectangle "Backend" {
-  [API Gateway] as Gateway
-  [Quiz Service] as QuizService
-  [Score Service] as ScoreService
-  [Leaderboard Service] as LeaderboardService
-  [Authentication Service] as AuthService
-}
-
-database "Redis for Quiz" as RedisQuiz
-database "Redis for Score" as RedisScore
-database "Redis for Leaderboard" as RedisLeaderboard
-database "PostgreSQL for Quiz" as PostgresQuiz
-database "PostgreSQL for Score" as PostgresScore
-database "PostgreSQL for Leaderboard" as PostgresLeaderboard
-
-rectangle "Monitoring" {
-  [Prometheus] as Prometheus
-  [Grafana] as Grafana
-  [ELK Stack] as ELK
-}
-
-User --> Client : Uses
-
-Client --> Gateway : WebSocket
-Client --> QuizService : WebSocket
-
-Gateway --> AuthService
-Gateway --> QuizService
-Gateway --> ScoreService
-Gateway --> LeaderboardService
-
-QuizService --> RedisQuiz : Read/Write
-QuizService --> PostgresQuiz : Read/Write
-QuizService --> ScoreService
-
-ScoreService --> RedisScore : Read/Write
-ScoreService --> PostgresScore : Read/Write
-ScoreService --> LeaderboardService
-
-LeaderboardService --> RedisLeaderboard : Read/Write
-LeaderboardService --> PostgresLeaderboard : Read/Write
-
-Backend --> Monitoring : Metrics
-Backend --> ELK : Logs
-
-Prometheus --> Grafana : Metrics Visualization
-ELK --> [Logs] : Log Analysis
-
-@enduml
-```
 ## Component Description
 
 - **Client Application**:
@@ -106,47 +68,9 @@ ELK --> [Logs] : Log Analysis
   - Each service interacts with its respective PostgreSQL and Redis database for data storage and retrieval.
 
 ## Sequence Diagrams
+![Sequence Diagram](diagrams/diagram.png)
 
-```plantuml
-@startuml
-actor User
-participant "Client Application" as Client
-participant "API Gateway" as Gateway
-participant "Quiz Service" as QuizService
-participant "Score Service" as ScoreService
-participant "Leaderboard Service" as LeaderboardService
-participant "Authentication Service" as AuthService
 
-database "PostgreSQL for Quiz" as PostgresQuiz
-database "PostgreSQL for Score" as PostgresScore
-database "PostgreSQL for Leaderboard" as PostgresLeaderboard
-
-User -> Client: Joins Quiz
-Client -> Gateway: WebSocket Join Request
-Gateway -> AuthService: Validate Session
-AuthService --> Gateway: Authentication Success
-Gateway -> QuizService: Session Validated
-
-Client -> QuizService: WebSocket Submit Answer
-QuizService -> PostgresQuiz: Write Answer Data
-QuizService -> ScoreService: Send Answer Data
-
-ScoreService -> ScoreService: Calculate Score
-ScoreService -> PostgresScore: Write Score Data
-ScoreService -> LeaderboardService: Update Leaderboard
-
-LeaderboardService -> PostgresLeaderboard: Write Leaderboard Data
-
-QuizService -> Client: WebSocket Send Acknowledgment
-LeaderboardService --> ScoreService: response
-ScoreService --> QuizService: response
-QuizService -> LeaderboardService: get Ranking
-LeaderboardService --> QuizService: ranking info
-QuizService -> Client: WebSocket Leaderboard Update
-
-@enduml
-
-```
 ## Data Flow
 
 ### User Joins Quiz:
@@ -177,8 +101,8 @@ QuizService -> Client: WebSocket Leaderboard Update
   - `quiz_sessions`: Stores information about active quiz sessions.
   - `questions`: Contains questions and their respective options.
   - `answers`: Records submitted answers by users for each session.
-
 ```sql
+-- Quiz Database Schema
 CREATE TABLE quiz_sessions (
     session_id SERIAL PRIMARY KEY,
     quiz_id INT NOT NULL,
@@ -213,6 +137,7 @@ CREATE TABLE answers (
   - `score_history`: Logs historical score data for analysis and auditing.
 
 ```sql
+-- Score Database Schema
 CREATE TABLE user_scores (
     score_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
@@ -240,6 +165,7 @@ CREATE TABLE score_history (
   - `leaderboard_history`: Maintains historical data for leaderboard trends and changes.
 
 ```sql
+-- Leaderboard Database Schema
 CREATE TABLE leaderboard (
     rank_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
@@ -286,3 +212,68 @@ CREATE TABLE leaderboard_history (
 - **Prometheus**: For metrics collection and monitoring.
 - **Grafana**: For visualizing metrics collected by Prometheus.
 - **ELK Stack**: For log collection and analysis.
+
+## Getting Started
+## Prerequisites
+
+- Java 11 or higher
+- Maven
+
+## Setup
+
+### 1. Clone the Repository
+
+```sh
+git clone https://github.com/huynhvanhoang/english-quiz.git
+```
+### 2. Build & run Project Scores, Leaderboard
+#### Scores Service
+```sh
+cd scores
+mvn clean package
+mvn spring-boot:run
+```
+#### Leaderboard Service
+```sh
+cd leaderboard
+mvn clean package
+mvn spring-boot:run
+```
+### 3. Tesing
+#### Add score
+```sh
+curl -X POST http://localhost:8081/v1/score/update \
+    -H "Content-Type: application/json" \
+    -d '{
+        "userId": 1,
+        "quizId": 1,
+        "score": 5
+    }'
+```
+
+```sh
+curl -X POST http://localhost:8081/v1/score/update \
+    -H "Content-Type: application/json" \
+    -d '{
+        "userId": 2,
+        "quizId": 1,
+        "score": 10
+    }'
+```
+
+```sh
+curl -X POST http://localhost:8081/v1/score/update \
+    -H "Content-Type: application/json" \
+    -d '{
+        "userId": 3,
+        "quizId": 1,
+        "score": 7
+    }'
+```
+
+#### Retrieve leaderboard for Quiz 1
+```sh
+curl http://localhost:8082/v1/leaderboard/1
+```
+
+

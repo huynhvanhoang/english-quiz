@@ -1,4 +1,23 @@
 # Real-Time Vocabulary Quiz Coding Challenge
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+  - [Architecture Diagram](#architecture-diagram)
+- [Component Description](#component-description)
+- [Sequence Diagrams](#sequence-diagrams)
+- [Data Flow](#data-flow)
+- [Database Design](#database-design)
+  - [Quiz Database](#quiz-database)
+  - [Score Database (PostgresScore)](#score-database-postgresscore)
+  - [Leaderboard Database (PostgresLeaderboard)](#leaderboard-database-postgresleaderboard)
+- [Redis Caching](#redis-caching)
+- [Technology and Tools](#technology-and-tools)
+- [How to Testing](#how-to-testing)
+  - [Prerequisites](#0-prerequisites)
+  - [Clone the Repository](#1-clone-the-repository)
+  - [Build & run Project Scores, Leaderboard](#2-build--run-project-scores-leaderboard)
+    - [Scores Service](#scores-service)
+    - [Leaderboard Service](#leaderboard-service)
+  - [Testing](#3-tesing)
 
 ## Overview
 
@@ -7,7 +26,7 @@ Welcome to the Real-Time Quiz coding challenge! Your task is to create a technic
 ## System Architecture
 
 ### Architecture Diagram
-![Architecture Diagram](./doc/diagrams/system architecture.png)
+![Architecture Diagram](doc/diagrams/architecture.png)
 
 ## Component Description
 
@@ -49,7 +68,7 @@ Welcome to the Real-Time Quiz coding challenge! Your task is to create a technic
     - Each service interacts with its respective PostgreSQL and Redis database for data storage and retrieval.
 
 ## Sequence Diagrams
-![Sequence Diagram](./doc/diagrams/sequence diagram.png)
+![Sequence Diagram](doc/diagrams/diagram.png)
 
 
 ## Data Flow
@@ -194,18 +213,16 @@ CREATE TABLE leaderboard_history (
 - **Grafana**: For visualizing metrics collected by Prometheus.
 - **ELK Stack**: For log collection and analysis.
 
-## Getting Started
-## Prerequisites
+## How to Testing
+### 0. Prerequisites
 
 - Java 11 or higher
 - Maven
 
-## Setup
-
 ### 1. Clone the Repository
-
 ```sh
 git clone https://github.com/huynhvanhoang/english-quiz.git
+cd english-quiz
 ```
 ### 2. Build & run Project Scores, Leaderboard
 #### Scores Service
